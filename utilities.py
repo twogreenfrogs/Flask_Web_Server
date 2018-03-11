@@ -105,18 +105,18 @@ class Database(object):
 
 
 class Notification(object):
-    TWILIO_SID = "ACaf9bd33fef906cf82dbc84a337f42b71"
-    TWILIO_TOKEN = "00259ce5c808c5e767b47061f1526a80"
-    TO_CELLNUM = "+14042029475"
-    FROM_CELLNUM = "+14049751340"
+    TWILIO_SID = ""
+    TWILIO_TOKEN = ""
+    TO_CELLNUM = ""
+    FROM_CELLNUM = ""
     
-    EMAIL_USERNAME = 'inzoolee@hotmail.com'
-    EMAIL_PASSWORD = 'InZoo0917'
+    EMAIL_USERNAME = ''
+    EMAIL_PASSWORD = ''
     
-    TWITTER_KEY = '9CeWFIYTjouxCSDuAaU9Sg'
-    TWITTER_SECRET = 'DoLv18KLvLEy6JoGQAyTijsSeqk8jddEsHRXGO7eKs'
-    TWITTER_TOKEN = '1122613873-6t0uUDCJ6TsvSclE2aKtlvnxx8JU0jrfOONcVys'
-    TWITTER_TOKEN_SECRET = 'UyADE5mP2k4q46Ly6Z725qwmLxV0h5QBIbo0QUqYDLXVv'
+    TWITTER_KEY = ''
+    TWITTER_SECRET = ''
+    TWITTER_TOKEN = ''
+    TWITTER_TOKEN_SECRET = ''
     
     def __init__(self):
         self.smtpserver = smtplib.SMTP("smtp.live.com", 587)
