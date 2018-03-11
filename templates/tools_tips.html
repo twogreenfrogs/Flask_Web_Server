@@ -1,0 +1,17 @@
+{% extends "header.html" %}
+{% block body %}
+<div class="row">
+	{% for blog in blogs %}
+	  <div class="col-md-4">
+	    <div class="thumbnail" style="height: 200px; margin-bottom: 10px; padding: 10px">
+	     	<div class="alert alert-info" role="alert"><h4>{{ blog['title'] }}</h4></div>
+	     	<a href="/blogs/{{ blog['category'] }}/{{ blog['blog_file'] }}">
+	     	<p style="margin-top: 20px;">
+			{{ blog['summary'] }}
+			</p>
+			</a>
+	    </div>
+	  </div>
+	{% endfor %}
+</div>
+{% endblock %}

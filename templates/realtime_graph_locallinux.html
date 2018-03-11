@@ -1,0 +1,183 @@
+{% extends "header.html" %}
+{% block body %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.min.js"></script>
+
+<style>
+#chart_container_cpu {
+        position: relative;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#chart_container_memory {
+        position: relative;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#chart_container_disk {
+        position: relative;
+        font-family: Arial, Helvetica, sans-serif;
+}
+#chartCpuUsage {
+        position: relative;
+        left: 40px;
+}
+#y_axisCpu {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 40px;
+}
+#legend {
+        display: inline-block;
+        vertical-align: top;
+        margin: 0 0 0 40px;
+}
+</style>
+
+<div id="chart_container_cpu">
+	<div style="margin:10px auto;width:902px;height:252;">
+		
+		<p> CPU usage </p>
+		
+		<div id="y_axisCpu"></div>
+		
+	    <div id="chartCpuUsage" style="border:1px solid #59525B;"></div>
+	    <div id="legend"></div>
+	</div>
+	
+</div>
+
+<!-- 
+<div id="chart_container_memory">
+	<div style="margin:10px auto;width:902px;height:252;">
+		<p> Memory usage </p>
+		<div id="y_axisMemory"></div>
+	    <div id="chartMemoryUsage" style="border:1px solid #59525B;"></div>
+	</div>
+</div>
+
+<div id="chart_container_disk">
+	<div style="margin:10px auto;width:902px;height:252;">
+		<p> Disk usage </p>
+		<div id="y_axisDisk"></div>
+	    <div id="chartDiskUsage" style="border:1px solid #59525B;"></div>
+	</div>
+</div>   
+  -->
+<script>	
+	var palette = new Rickshaw.Color.Palette();
+		
+	var maxDataPoints = 360 // 30 min. 1 dataPoint/10sec
+	var dataPointInterval = 1 // every 10 sec
+	var dataCpuUsage =  [];
+	var dataMemoryUsage =  [];
+	var dataDiskUsage =  [];
+	
+	//initialize array
+	timestamp = new Date().getTime()/1000;
+	for (var i = 0; i < maxDataPoints; i++) {
+		dataCpuUsage[i] = {x:timestamp - ((maxDataPoints-1)-i), y:0};
+		dataMemoryUsage[i] = {x:timestamp - ((maxDataPoints-1)-i), y:0};
+		dataDiskUsage[i] = {x:timestamp - ((maxDataPoints-1)-i), y:0};
+    }
+    
+	var graphCpuUsage = new Rickshaw.Graph( {
+	  element: document.getElementById("chartCpuUsage"),
+	  width: 900,
+	  height: 250,
+	  renderer: 'line',
+	  stroke: true,
+	  series: [
+		    {
+		      color: palette.color(),
+		      data: dataCpuUsage,
+		      name: 'CPU Usage',
+		    },
+		   {
+		      color: palette.color(),
+		      data: dataMemoryUsage,
+		      name: 'Memory Usage',
+		    }, 
+		   {
+		      color: palette.color(),
+		      data: dataDiskUsage,
+		      name: 'Disk Usage',
+		    }
+	    ]
+	});	
+	
+				
+	graphCpuUsage.render();
+
+	/*
+	var xAxisCpu = new Rickshaw.Graph.Axis.X({
+	  graph: graphCpuUsage,
+	  tickFormat: function(x){
+	                return new Date(x * 1000).toLocaleTimeString();
+	                //return new Date().toLocaleTimeString();
+	              }
+	})
+	*/
+	
+	xAxisCpu = new Rickshaw.Graph.Axis.Time({
+        graph: graphCpuUsage,
+        timeUnit: {
+            seconds: 60,
+            formatter: function(d) {
+                return d.toUTCString().match(/(\d+:\d+):/)[1];
+            }
+        }
+    });
+    
+	
+	var y_axisCpu = new Rickshaw.Graph.Axis.Y( {
+	        graph: graphCpuUsage,
+	        orientation: 'left',
+	        //tickFormat: Rickshaw.Fixtures.Number.formatKMBT,
+	        tickValues: [20,40,60,80,100],
+	        element: document.getElementById('y_axisCpu'),
+	} );
+	
+
+	xAxisCpu.render(); 
+
+	var legend = new Rickshaw.Graph.Legend( {
+	        element: document.querySelector('#legend'),
+	        graph: graphCpuUsage
+	} );
+
+	
+	//fetch_data every sec		
+	function fetch_data() {
+		$(function() {
+			$.getJSON('/metric', {
+			  metric_name1: 'cpuUsage',
+			  metric_name2: 'memoryUsage', 
+			  metric_name3: 'diskUsage'
+			}, 
+			function(data) {
+			  timestamp = new Date().getTime()/1000;
+		      dataCpuUsage.push( { x: timestamp, y: data.cpuUsage } );
+		      dataMemoryUsage.push( { x: timestamp, y: data.memoryUsage } );
+		      dataDiskUsage.push( { x: timestamp, y: data.diskUsage } );
+		      
+		      if (dataCpuUsage.length > 100) {
+		      	dataCpuUsage.shift()
+		      	dataMemoryUsage.shift()
+		      	dataDiskUsage.shift()
+		      }
+		      console.log({ x: timestamp, y: data.cpuUsage });
+		      graphCpuUsage.update();
+			});
+			return false;
+		});
+	}
+	setInterval( function() {
+		fetch_data();
+		//fetch_another_data();
+		//fetch_third_data();
+	}, dataPointInterval * 1000 );
+			
+</script>
+{% endblock %}

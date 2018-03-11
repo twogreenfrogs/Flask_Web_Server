@@ -1,0 +1,95 @@
+{% extends "header.html" %}
+{% block body %}
+<div class="col-lg-3 col-md-4 col-xs-6 thumb">
+<h3>REST API Design summary and How-to</h3>
+<pre>
+This blog summerizes rest API design of this server and how to use.
+
+Purpose: To trigger email, sms, twitter notification in case of monitoring event happens.
+         Client monitors specific event in target, and issue HTTP GET/POST to trigger notification if that event happens
+
+Available API, Supported HTTP methods, and expected return:
+   
+URL:SERVER_URL/api/events
+Method: HTTP GET
+Return: Details about all currently available events
+
+URL:SERVER_URL/api/events/<specific_event>
+Method: HTTP GET
+Return: specific_event details
+
+URL:SERVER_URL/api/events
+Method: HTTP POST
+Return: Create new event to monitor
+
+URL:SERVER_URL/api/events/<specific_event>
+Method: HTTP PUT
+Return: Update specific_event
+
+URL:SERVER_URL/api/events/<specific_event>
+Method: HTTP DELETE
+Return: Delete specific_event	
+
+URL:SERVER_URL/api/events/trigger/<specific_event>
+Method: HTTP GET, HTTP POST
+Return: Trigger notification for specific_event.
+        HTTP GET triggers email, sms, twitter. PUT can trigger to only specific target	
+
+
+Examples:
+- RESTClient code available in Sharing/Download -
+
+   REST_SERVER = 'http://server_IPaddr_or_Domain_name'
+   REST_USERNAME = 'your_username_here'
+   REST_PASSWORD = 'your_password_here'
+   
+   with RESTClient(base_url=REST_SERVER, auth='basic', username=REST_USERNAME, password=REST_PASSWORD) as client:
+
+       # Test1: get all events
+       try:
+           pprint(client.get('/api/events/'))
+       except requests.exceptions.ConnectionError:
+           print 'Cannot connect to {}'.format(REST_SERVER)
+       print
+       
+       # Test2: get only 1 event
+       try:
+           pprint(client.get('/api/events/3G_OVERAGE/'))
+       except requests.exceptions.ConnectionError:
+           print 'Cannot connect to {}'.format(REST_SERVER)
+       print
+       
+       # Test 3: create new event  
+       json_data = {
+           "event_name": "ANOTHER_EVENT",
+           'emails': [u'inzoolee@hotmail.com'],
+           'sms_nums': [u'+14041111111'],                        
+           'twitters': False,
+       }          
+       pprint(client.post('/api/events/', json_data))
+       print
+
+       # Test 4: update existing event  
+       json_data = {
+           "event_name": "3G_OVERAGE",
+           'emails': [u'inzoolee@hotmail.com', u'test@test.com', u'test@test.com'],
+           'sms_nums': [u'+14041112222', u'+14101112345'],                        
+           'twitters': True,
+       }          
+       pprint(client.put('/api/events/3G_OVERAGE/', json_data))
+       print
+           
+       # Test 5: trigger notification for specific event 
+       json_data = {
+           "event_name": "3G_OVERAGE",
+           'targets': ['email', 'sms', 'twitters' ],
+       }          
+       pprint(client.post('/api/events/trigger/3G_OVERAGE', json_data))
+       print
+
+       # Test 6: delete existing event    
+       pprint(client.delete('/api/events/ANOTHER_EVENT/'))
+       print
+</pre>  
+</div>      
+{% endblock %}

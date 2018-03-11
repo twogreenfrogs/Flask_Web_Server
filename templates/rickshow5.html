@@ -1,0 +1,129 @@
+{% extends "header.html" %}
+{% block body %}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/3.5.6/d3.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rickshaw/1.5.1/rickshaw.min.js"></script>
+
+<div style="margin:10px auto;width:902px;height:252;">
+	<p> CPU usage </p>
+    <div id="chartCpuUsage" style="border:1px solid #59525B;"></div>
+</div>
+<div style="margin:10px auto;width:902px;height:252;">
+	<p> Memory usage </p>
+    <div id="chartMemoryUsage" style="border:1px solid #59525B;"></div>
+</div>
+<div style="margin:10px auto;width:902px;height:252;">
+	<p> Disk usage </p>
+    <div id="chartDiskUsage" style="border:1px solid #59525B;"></div>
+</div>   
+ 
+<script>		
+	//var seriesData = [ [{ x: 0, y: 40 }, { x: 1, y: 49 }, { x: 2, y: 17 }, { x: 3, y: 42 }] ];
+	var dataCpuUsage =  [];
+	var dataMemoryUsage =  [];
+	var dataDiskUsage =  [];
+	
+	var graphCpuUsage = new Rickshaw.Graph( {
+	  element: document.getElementById("chartCpuUsage"),
+	  width: 900,
+	  height: 250,
+	  //renderer: 'area',
+	  renderer: 'line',
+	  stroke: true,
+	  series: [
+		    {
+		      color: 'steelblue',
+		      data: dataCpuUsage,
+		      name: 'CPU Usage'
+		    }
+	    ]
+	});	
+
+	var graphMemoryUsage = new Rickshaw.Graph( {
+	  element: document.getElementById("chartMemoryUsage"),
+	  width: 900,
+	  height: 250,
+	  renderer: 'line',
+	  stroke: true,
+	  series: [
+		    {
+		      color: 'steelblue',
+		      data: dataMemoryUsage,
+		      name: 'Memory Usage'
+		    }
+	    ]
+	});	
+
+	var graphDiskUsage = new Rickshaw.Graph( {
+	  element: document.getElementById("chartDiskUsage"),
+	  width: 900,
+	  height: 250,
+	  renderer: 'line',
+	  stroke: true,
+	  series: [
+		    {
+		      color: 'steelblue',
+		      data: dataDiskUsage,
+		      name: 'Disk Usage'
+		    }
+	    ]
+	});		
+	
+				
+	graphCpuUsage.render();
+	graphMemoryUsage.render();
+	graphDiskUsage.render();	
+	
+    /*var xAxis = new Rickshaw.Graph.Axis.Time( {
+		graph: graphCpuUsage,
+		ticksTreatment: ticksTreatment,
+		timeFixture: new Rickshaw.Fixtures.Time.Local()
+	} ); */
+
+	
+	var xAxis = new Rickshaw.Graph.Axis.X({
+	  graph: graphCpuUsage,
+	  tickFormat: function(x){
+	                return new Date(x * 1000).toLocaleTimeString();
+	                //return new Date().toLocaleTimeString();
+	              }
+	})
+	
+	xAxis.render(); 
+	
+	//fetch_data every sec		
+	function fetch_data() {
+		$(function() {
+			$.getJSON('/metric', {
+			  metric_name1: 'cpuUsage',
+			  metric_name2: 'memoryUsage', 
+			  metric_name3: 'diskUsage'
+			}, 
+			function(data) {
+			  timestamp = new Date().getTime()/1000;
+		      dataCpuUsage.push( { x: timestamp, y: data.cpuUsage } );
+		      dataMemoryUsage.push( { x: timestamp, y: data.memoryUsage } );
+		      dataDiskUsage.push( { x: timestamp, y: data.diskUsage } );
+		      
+		      if (dataCpuUsage.length > 3600) {
+		      	dataCpuUsage.shift()
+		      	dataMemoryUsage.shift()
+		      	dataDiskUsage.shift()
+		      }
+		      console.log({ x: timestamp, y: data.cpuUsage });
+		      graphCpuUsage.update();
+		      graphMemoryUsage.update();
+		      graphDiskUsage.update();
+			});
+			return false;
+		});
+	}
+	setInterval( function() {
+		fetch_data();
+		//fetch_another_data();
+		//fetch_third_data();
+	}, 1000 );
+			
+</script>
+{% endblock %}

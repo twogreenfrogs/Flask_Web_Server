@@ -1,0 +1,97 @@
+{% extends "header.html" %}
+{% block body %}
+<div class="col-lg-12 col-md-12 col-xs-12">
+<h4>Simulate DHCP, DNS, NTP servers with Scapy</h4>
+<pre>
+Scapy is packet manipulation program built on Python.
+Below simple example shows how to simulate DHCP, DNS, and NTP servers and trick client like PC).
+Specifically this script was targeting DLC which checks DNS and NTP connectivity after DHCP process to make sure it has Internet connection.
+Complete script is available in <a herf="{{ url_for('sharing_and_fun') }}">sharing & Fun</a>
+
+Below briefly explains how this program works:
+
+1. First we need server IP address and interface that interacts with clients.
+   Then we configure server interface accordingly before starting FaskServer.
+
+    #global variables
+    conf.iface = 'eth1'
+    fake_server_ip="10.0.0.1" 
+    dummy_client_ip="10.0.0.2" 
+
+    #block ICMP Port unreachable from OS layer
+    if subprocess.call("sudo iptables -F".split()) or \
+        subprocess.call("sudo iptables -I OUTPUT -p icmp --icmp-type destination-unreachable -j DROP".split()):
+        print 'Failed to set iptables...'
+        sys.exit(1) 
+           
+    #setup server interface
+    if subprocess.call("sudo ifconfig {} {} netmask {}".format(conf.iface, fake_server_ip, "255.255.255.0").split()):
+        print 'Failed to set interface ip address...'
+        sys.exit(1)    
+   
+  Once this is done, we instanciate FakeServer, filter in only packets that we're interested(DHCP, DNS and NTP packets in our case) and call start() function.
+  In FakeServer.start function, we triage packets and call appropriate functions to handle each packet.  
+
+
+    def start(self, pkt):
+        if 'IP' not in pkt or 'UDP' not in pkt:
+            return
+        
+        print
+        print 'pkt: {}[{}] --> {}[{}] '.format(pkt[IP].src, pkt[UDP].sport, pkt[IP].dst, pkt[UDP].dport)
+               
+        if pkt[UDP].dport == 67 and pkt[IP].src != self.my_ipaddr:
+            self.handle_dhcp(pkt)
+        elif pkt[UDP].dport == 53 and pkt[IP].src != self.my_ipaddr:
+            self.handle_dns(pkt)
+        elif pkt[UDP].dport == 123 and pkt[IP].src != self.my_ipaddr:
+            self.handle_ntp(pkt)
+        else:
+            pass
+              
+
+  We can specify DHCP pool size(default is 10). FakeServer manages DHCP_LEASE_STATUS dictionary which initially gets initialized ip address as key and None in value.
+  But once ip address is leased to client, then value gets updated with client mac address.
+  If same client(same mac) sends another DHCP_Discovery, then FaksServer assigns same ip address and only assign new ip address to new client.
+
+
+        if pkt[Ether].src in FakeServer.DHCP_LEASE_STATUS.values():
+            #return same ip address if client mac is in lease table
+            client_ip = dict(zip(FakeServer.DHCP_LEASE_STATUS.values(), FakeServer.DHCP_LEASE_STATUS.keys()))[pkt[Ether].src]
+        else:
+            #this is new client. lease new ip addr
+            #print "*** dhcp ***", FakeServer.DHCP_LEASE_STATUS
+            for ipaddr, clnt_mac in FakeServer.DHCP_LEASE_STATUS.items():
+                if not clnt_mac:
+                    print 'assigning {} to {}'.format(ipaddr, pkt[Ether].src)
+                    client_ip = ipaddr
+                    FakeServer.DHCP_LEASE_STATUS[client_ip] = pkt[Ether].src
+                    break
+            else:
+                print 'all ip addresses leased. no more ip addresses to lease...'
+                for ipaddr, clnt_mac in FakeServer.DHCP_LEASE_STATUS.items():
+                    print 'ipaddr: {} - mac: {}'.format(ipaddr, clnt_mac)
+                print
+                return
+                
+  In case of DNS, FakeServer maintains DNS_LOOKUP_TABLE dictionary.
+  If query_domain is in this dictionary, FakeServer returns ip address in this table. Otherwise it returns its own server ip address for any unknown domain name.
+
+    def handle_dns(self, pkt):   
+        query_domain = pkt['DNS Question Record'].qname
+        if str(query_domain) in FakeServer.DNS_LOOKUP_TABLE.keys():
+            resolved_ip_addr = FakeServer.DNS_LOOKUP_TABLE[query_domain]
+        else:
+            resolved_ip_addr = self.my_ipaddr
+        
+        print "Got DNS Query to {}. returning ipaddr {}".format(query_domain, resolved_ip_addr) 
+          
+
+  That is all there is. Run this script first and then DLC WAN interface cable to this PC.
+  Then after DHCP, DLC will check DNS and NTP connectivity and shows WAN interface is up even if actually it is not.                    
+  
+  Purpose of this script is just to check DLC's WAN activities in isolated network when we have no LAN port access.
+  
+</pre>  
+</div>      
+{% endblock %}

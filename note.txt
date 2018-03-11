@@ -1,0 +1,57 @@
+Web Server Design Summary:
+==========================
+1. what do I want
+  a. real time data graphing
+  b. event notification system
+  c. my own blog management.(content management)
+  d. integration with real world.(control real world stuff)
+  e. video streaming
+  f. use for defect troubleshooting.(external syslog)
+  g. reverse ssh based sync up with client.(security & scaleability problem)
+     .client setup reverse-ssh upon start
+     .when cfg changes in server, server reverse-ssh and trigger connection to server
+     .client downloads new cfg and take action accordingly
+    
+
+					backend <---|---> frontend                     
+Database(MySQL) -------- Flask(Web framework) -------- Bootstrap(CSS, Javascript, HTML)
+1. blogs_data            1. rest API for notification
+2. users                 2. user login handling
+                         3. realtime graph
+
+1. ImportError:
+---------------
+  From /var/log/apache2/error_log you'll see something along the lines of "ImportError: No module named flask"
+  1.  Edit /etc/apache2/sites-available/FlaskApp.conf
+  2.  Add the following two lines before the "WSGIScriptAlias" line:
+       WSGIDaemonProcess FlaskApp python-path=/var/www/FlaskApp:/var/www/FlaskApp/FlaskApp/venv/lib/python2.7/site-packages
+       WSGIProcessGroup FlaskApp
+  3.  Restart Apache with "service apache2 restart"
+  
+
+2. Bootstrap garelly:
+---------------------
+   https://github.com/BlackrockDigital/startbootstrap-thumbnail-gallery/blob/master/index.html
+
+
+3. RickShow Ajax:
+-------------------
+https://github.com/mattnedrich/rickshaw_examples
+http://code.runnable.com/UlbRqg6mpI8WAAAv/rickshaw-examples-graphs-via-ajax-data
+https://gist.github.com/melodymorgan/3914145 ; realtime data update
+
+
+4. JQuery:
+---------------------
+https://www.youtube.com/watch?v=BJ0tyZg2zek; Ajax GET Json tut
+
+$(document).ready(function() {
+
+});
+
+same as:
+$(function() {
+
+}); // as soon as document fully loads, execute what is inside function () {}
+
+

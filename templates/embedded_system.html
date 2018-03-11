@@ -1,0 +1,55 @@
+{% extends "header.html" %}
+{% block body %}
+
+<div>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#arduino" aria-controls="arduino" role="tab" data-toggle="tab">Arduino</a></li>
+    <li role="presentation"><a href="#beableboneblack" aria-controls="beagleboneblack" role="tab" data-toggle="tab">Beaglebone Black</a></li>
+    <li role="presentation"><a href="#raspberrypi" aria-controls="raspberrypi" role="tab" data-toggle="tab">Raspberry Pi</a></li>
+    <li role="presentation"><a href="#others" aria-controls="others" role="tab" data-toggle="tab">Others</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+	<div class="tab-content">		
+	  <div role="tabpanel" class="tab-pane fade" id="arduino">
+		<div class="container-fluid thumbnail" style="margin-top: 10px;">
+			arduino
+				{% for blog in blogs %}
+			  <div class="col-md-4">
+			    <div class="thumbnail" style="height: 200px; margin-bottom: 10px; padding: 10px">
+			     	<div class="alert alert-info" role="alert"><h4>{{ blog['title'] }}</h4></div>
+			     	<a href="/blogs/{{ blog['category'] }}/{{ blog['blog_file'] }}">
+			     	<p style="margin-top: 20px;">
+					{{ blog['summary'] }}
+					</p>
+					</a>
+			    </div>
+			  </div>
+			{% endfor %}
+		</div>
+	  </div>
+	  
+	  <div role="tabpanel" class="tab-pane fade" id="beableboneblack">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+			beaglebone black
+		  </div>
+	  </div>
+
+	  <div role="tabpanel" class="tab-pane fade" id="raspberrypi">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+			raspberry-pi
+		  </div>
+	  </div>
+
+	  <div role="tabpanel" class="tab-pane fade" id="others">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+			others
+		  </div>
+	  </div>
+	  	  	  
+	</div>
+</div>
+
+{% endblock %}

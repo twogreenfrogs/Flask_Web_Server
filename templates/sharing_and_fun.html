@@ -1,0 +1,219 @@
+{% extends "header.html" %}
+{% block body %}
+<style>
+.image-device {
+    width: 70px;
+    height: 70px;
+}
+.image-button {
+    width: 70px;
+    height: 70px;
+    margin-left: 30px;
+}
+.container-device {
+	margin-top: 30px;
+}
+.left {
+	width: 33%;
+	vertical-align: top;
+	border: 1px solid #EEEEEE;
+	display: inline-block;
+}
+.center {
+	width: 33%;
+	vertical-align: top;
+	border: 1px solid #EEEEEE;
+	display: inline-block;
+}
+.right {
+	width: 33%;
+	vertical-align: top;
+	border: 1px solid #EEEEEE;
+	display: inline-block;
+}
+
+</style>
+
+<div>
+
+  <!-- Nav tabs -->
+  <ul class="nav nav-tabs" role="tablist">
+    <li role="presentation" class="active"><a href="#livedata" aria-controls="livedata" role="tab" data-toggle="tab">Real Time Monitoring</a></li>
+    <li role="presentation"><a href="#upload" aria-controls="upload" role="tab" data-toggle="tab">Upload</a></li>
+    <li role="presentation"><a href="#download" aria-controls="download" role="tab" data-toggle="tab">Download</a></li>
+    <li role="presentation"><a href="#wwcts" aria-controls="wwcts" role="tab" data-toggle="tab">WWCTS Activities</a></li>
+    <li role="presentation"><a href="#video_feed" aria-controls="video_feed" role="tab" data-toggle="tab">Live Camera</a></li>
+    <li role="presentation"><a href="#home_automation" aria-controls="home_automation" role="tab" data-toggle="tab">Home Automation</a></li>
+  </ul>
+
+  <!-- Tab panes -->
+	<div class="tab-content">
+
+	  <div role="tabpanel" class="tab-pane" id="livedata">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+		  	<h2>DLC STATUS</h2>
+			  <div class="container" align="left">
+					<li><a href="/metric/realtime_graph_dlc100.html">My DLC100 Status</a></li>
+					<li><a href="/metric/realtime_graph_locallinux.html">Local Machine Status</a></li>
+			  </div>
+		  </div>
+	  </div>
+	  	
+	  <div role="tabpanel" class="tab-pane" id="upload">
+		<div class="container">
+			<br>
+			<h4>Choose File to Upload:</h4>
+			<br>
+			<form action="/upload" method="post" enctype = "multipart/form-data">
+				<input class="btn btn-default" type="file" name="file">
+				<input class="btn btn-default" type="submit">
+			</form>
+			
+			<p>{{ message }}</p>
+		</div>
+	  </div>
+	  
+	  <div role="tabpanel" class="tab-pane" id="download">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+		  	<h2>Files</h2>
+				<ul>
+				{%- for item in download_folder_files %}
+				        <ul><a href="{{ url_for('static', filename='download/' + item) }}">{{ item }}</a></ul>
+				{%- endfor %}
+				</ul>
+		  </div>
+	  </div>
+
+	  <div role="tabpanel" class="tab-pane" id="wwcts">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+		  	<h2>WWCTS Activities</h2>
+		  	<!-- real time graph -->
+		  	<!-- http://stackoverflow.com/questions/15721679/update-and-render-a-value-from-flask-periodically -->
+			  <div class="container" align="left">
+					<embed type="image/svg+xml" src={{graph_data|safe}} style='max-width:500px'/>
+			  </div>
+		  </div>
+	  </div>
+
+	  <div role="tabpanel" class="tab-pane" id="video_feed">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px;">
+		  	<h2>Video Feed</h2>
+			  <div class="container" align="left">
+					<!-- <img src="{{ url_for('video_feed') }}"> -->
+			  </div>
+		  </div>
+	  </div>
+
+	  <div role="tabpanel" class="tab-pane" id="home_automation">
+		  <div class="container-fluid thumbnail" style="margin-top: 10px; height: 100%; width:100%;" >
+		  
+		  	<h2>Home Automation</h2>
+				<div class="left">
+				  <div class="container-device">
+				      <img class="image-device" src="{{ url_for('static', filename='images/wifi.jpeg') }}">
+				      {% if wifi == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/on_btn.jpeg') }}" onclick="update('wifi', 'off');">
+				      {% else %} 
+				        <img class="image-button" src="{{ url_for('static', filename='images/off_btn.jpeg') }}" onclick="update('wifi', 'on');"> 
+				      {% endif %}
+				  </div>
+				
+				  <div class="container-device">
+				      <img class="image-device" src="{{ url_for('static', filename='images/umts.jpeg') }}">
+				      {% if umts == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/on_btn.jpeg') }}" onclick="update('umts', 'off');">
+				      {% else %} 
+				        <img class="image-button" src="{{ url_for('static', filename='images/off_btn.jpeg') }}" onclick="update('umts', 'on');">
+				      {% endif %}
+				  </div>
+				  
+				  <div class="container-device">
+				      <img class="image-device" src="{{ url_for('static', filename='images/webcam.jpeg') }}">
+				      {% if webcam == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/on_btn.jpeg') }}" onclick="update('webcam', 'off');">
+				      {% else %} 
+				        <img class="image-button" src="{{ url_for('static', filename='images/off_btn.jpeg') }}" onclick="update('webcam', 'on');">
+				      {% endif %}
+				  </div>
+				
+				  <div class="container-device">
+				      <img class="image-device" src="{{ url_for('static', filename='images/ipcam.jpeg') }}">
+				      {% if ipcam == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/on_btn.jpeg') }}" onclick="update('ipcam', 'off');">
+				      {% else %} 
+				        <img class="image-button" src="{{ url_for('static', filename='images/off_btn.jpeg') }}" onclick="update('ipcam', 'on');">
+				      {% endif %}
+				  </div>
+				</div>
+				
+				<div class="center">	
+				  <div class="container-device">
+				      <img class="image-device" src="{{ url_for('static', filename='images/robot.jpeg') }}">
+				      {% if robot == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/on_btn.jpeg') }}" onclick="update('robot', 'off');">
+				      {% else %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/off_btn.jpeg') }}" onclick="update('robot', 'on');">
+				      {% endif %}
+				  </div>
+				
+				  <div class = "container-device">
+				      <img class="image-button"  src="{{ url_for('static', filename='images/robot_forward.jpeg') }}" onclick="update('move', 'forward');">
+				  </div>
+				  
+				  <div class = "container-device">
+				      <img class="image-button" src="{{ url_for('static', filename='images/robot_left.jpeg') }}" onclick="update('move', 'left');">
+				      {% if move == "stop" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/robot_stop.jpeg') }}" onclick="update('move', 'forward');">
+				      {% else %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/robot_move.jpeg') }}" onclick="update('move', 'stop');">
+				      {% endif %}
+				      <img class="image-button" src="{{ url_for('static', filename='images/robot_right.jpeg') }}" onclick="update('move', 'right');">
+				  </div>
+				  
+				  <div class = "container-device">
+				      <img class="image-button" src="{{ url_for('static', filename='images/robot_backward.jpeg') }}"onclick="update('move', 'backward');">
+				  </div>
+				</div>
+				
+				<div class="right">
+				  <div class = "container-device">
+					<h2> Arm/Unarm </h2>
+				      {% if armed == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/armed_on.jpeg') }}" onclick="update('armed', 'off');">
+				      {% else %}
+				        <img class="image-button"  src="{{ url_for('static', filename='images/armed_off.jpg') }}" onclick="update('armed', 'on');">
+				      {% endif %}
+				  </div>
+				
+				  <div class = "container-device">
+				        <h2> Lamp on/off </h2>
+				      {% if lamp == "on" %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/lamp_on.jpeg') }}" onclick="update('lamp', 'off');">
+				      {% else %}
+				        <img class="image-button" src="{{ url_for('static', filename='images/lamp_off.jpeg') }}" onclick="update('lamp', 'on');">
+				      {% endif %}
+				  </div>
+			  	</div>
+			  
+		  </div>
+	  	</div>  	  	  
+	</div>
+</div>
+
+<script>
+	//this is for home automation
+	function update(item, status) {
+             var statusObj={"desc":item, "status":status};
+             $.ajax({
+                       url:"/robot/api/"+item,
+                       type: "PUT",
+                       contentType:"application/json; charset=UTF-8",
+		dataType:"json",
+                       data: JSON.stringify(statusObj),
+                       success: function(){
+                               location.reload()
+                       }
+             });
+	}
+   </script>
+{% endblock %}
